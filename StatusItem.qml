@@ -1,8 +1,7 @@
 import QtQuick 6.0
 
 Rectangle {
-    width: 300
-    height: 50
+    height: 70
     color: "white"
     border.color: "#ccc"
     radius: 8
@@ -11,34 +10,40 @@ Rectangle {
     property int statusValue: 0
     property color barColor: "gray"
 
-    Row {
-        spacing: 10
+    Column {
+        spacing: 4
         anchors.centerIn: parent
+        width: parent.width - 10
 
         Text {
-            text: parent.parent.label
+            text: label
             font.bold: true
-            width: 50
+            font.pixelSize: 14
+            anchors.horizontalCenter: parent.horizontalCenter
         }
 
         Rectangle {
-            width: 150
-            height: 20
+            width: Math.min(160, parent.width * 0.7)
+            height: 16
             color: "#eee"
-            radius: 10
+            radius: 8
             clip: true
+            anchors.horizontalCenter: parent.horizontalCenter
 
             Rectangle {
-                width: (parent.width * (parent.parent.parent.statusValue / 100))
+                width: (parent.width * (statusValue / 100))
                 height: parent.height
-                color: parent.parent.parent.barColor
-                radius: 10
+                color: barColor
+                radius: 8
+                Behavior on width { NumberAnimation { duration: 200 } }
             }
         }
 
         Text {
-            text: parent.parent.parent.statusValue + "%"
-            width: 40
+            text: statusValue + "%"
+            font.pixelSize: 12
+            color: barColor
+            anchors.horizontalCenter: parent.horizontalCenter
         }
     }
 }

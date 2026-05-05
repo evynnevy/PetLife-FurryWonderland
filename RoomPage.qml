@@ -23,7 +23,7 @@ Item {
     // 半透明遮罩
     Rectangle {
         anchors.fill: parent
-        color: "#60000000"
+        color: "#20000000"
         z: 0
     }
 
@@ -34,7 +34,7 @@ Item {
         width: parent.width * 0.5
         height: width * 0.75
         anchors.centerIn: parent
-        anchors.verticalCenterOffset: -20
+        anchors.verticalCenterOffset: 30
         fillMode: Image.PreserveAspectFit
         z: 2
         NumberAnimation on scale {
@@ -47,7 +47,7 @@ Item {
         id: statusCard
         width: parent.width * 0.9
         anchors.top: parent.top; anchors.topMargin: 20; anchors.horizontalCenter: parent.horizontalCenter
-        height: statusExpanded ? 280 : 70
+        height: statusExpanded ? 130 : 60
         radius: 24
         color: "#E6FFFFFF"
         border.color: "#CCCCCC"; border.width: 1
@@ -70,12 +70,15 @@ Item {
                 MouseArea { anchors.fill: parent; cursorShape: Qt.PointingHandCursor; onClicked: statusExpanded = !statusExpanded }
             }
 
-            Column {
-                width: parent.width; spacing: 10; visible: statusExpanded; anchors.horizontalCenter: parent.horizontalCenter
-                StatusItem { label: "💪 健康"; statusValue: petStatus.health; barColor: "#FF6B6B" }
-                StatusItem { label: "🍗 饥饿"; statusValue: petStatus.hunger; barColor: "#FFA559" }
-                StatusItem { label: "😴 困倦"; statusValue: petStatus.sleepiness; barColor: "#6C91B2" }
-                StatusItem { label: "😊 心情"; statusValue: petStatus.mood; barColor: "#6BCB77" }
+            RowLayout {
+                width: parent.width
+                visible: statusExpanded
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                StatusItem { label: "💪 健康"; statusValue: petStatus.health; barColor: "#FF6B6B"; Layout.fillWidth: true }
+                StatusItem { label: "🍗 饥饿"; statusValue: petStatus.hunger; barColor: "#FFA559"; Layout.fillWidth: true }
+                StatusItem { label: "😴 困倦"; statusValue: petStatus.sleepiness; barColor: "#6C91B2"; Layout.fillWidth: true }
+                StatusItem { label: "😊 心情"; statusValue: petStatus.mood; barColor: "#6BCB77"; Layout.fillWidth: true }
             }
         }
     }

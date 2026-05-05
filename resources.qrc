@@ -1,0 +1,14 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Main.qml</file>
+        <file>HomePage.qml</file>
+        <file>RoomPage.qml</file>
+        <file>images/home_planet.png</file>
+        <file>images/pet_room.png</file>
+        <file>PetSelection.qml</file>
+        <file>StatusItem.qml</file>
+        <file>images/Samoyed.png</file>
+        <file>images/Ragdoll.png</file>
+        <file>images/Abyssinian.png</file>
+    </qresource>
+</RCC>

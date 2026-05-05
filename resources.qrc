@@ -10,5 +10,7 @@
         <file>images/Samoyed.png</file>
         <file>images/Ragdoll.png</file>
         <file>images/Abyssinian.png</file>
+        <file>audio/bgm.mp3</file>
+        <file>images/Golden.png</file>
     </qresource>
 </RCC>

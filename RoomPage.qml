@@ -20,17 +20,16 @@ Item {
         opacity: 0.9
     }
 
-    // 半透明遮罩
     Rectangle {
         anchors.fill: parent
         color: "#20000000"
         z: 0
     }
 
-    // 宠物图片（呼吸动画）
+    // 宠物图片
     Image {
         id: petImage
-        source: "qrc:/images/Samoyed.png"
+        source: petModel.currentPetImage
         width: parent.width * 0.5
         height: width * 0.75
         anchors.centerIn: parent
@@ -42,7 +41,7 @@ Item {
         }
     }
 
-    // 可折叠状态卡片
+    // 可折叠状态栏
     Rectangle {
         id: statusCard
         width: parent.width * 0.9
@@ -83,7 +82,7 @@ Item {
         }
     }
 
-    // 底部按钮行
+    // 用户操作按钮行
     Row {
         spacing: 24
         anchors.bottom: parent.bottom; anchors.bottomMargin: 40; anchors.horizontalCenter: parent.horizontalCenter

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QString>
+#include <QDateTime>
 
 class PetStatus : public QObject
 {
@@ -27,6 +28,11 @@ public:
     void setSleepiness(int sleepiness);
     void setMood(int mood);
 
+    // v3.1 新增：宠物性格系统
+    Q_INVOKABLE void setPersonality(double hungryRate, double sleepyRate,
+                                    double feedEffect, double playEffect,
+                                    double restEffect, double healEffect);
+
     // 功能方法
     Q_INVOKABLE void feed(int amount = 20);       // 喂食
     Q_INVOKABLE void play(int amount = 10);       // 玩耍
@@ -50,6 +56,20 @@ private:
     int m_hunger;      // 饥饿值 0-100
     int m_sleepiness;  // 困倦值 0-100
     int m_mood;        // 心情值 0-100
+
+    // v3.1 新增：性格系数
+    double m_hungryRate;
+    double m_sleepyRate;
+    double m_feedEffect;
+    double m_playEffect;
+    double m_restEffect;
+    double m_healEffect;
+
+    // v3.1 新增：互动疲劳冷却系统
+    QDateTime m_lastOperationTime;
+    int m_fatigueCount;
+    double getCurrentEffectFactor() const;
+    void recordOperation();
 };
 
 #endif // PETSTATUS_H

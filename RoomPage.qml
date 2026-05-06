@@ -9,6 +9,7 @@ Item {
 
     Component.onCompleted: {
         var id = petModel.currentPetId;
+        petStatus.setPetType(id);
         console.log("=== RoomPage 初始化，当前宠物ID:", id, "名称:", petModel.currentPetName);
         var health = petModel.getPetDefaultHealth(id);
         var hunger = petModel.getPetDefaultHunger(id);
@@ -26,6 +27,7 @@ Item {
         target: petModel
         onCurrentPetChanged: {
             var id = petModel.currentPetId;
+            petStatus.setPetType(id);
             console.log("宠物切换为:", id);
             petStatus.health = petModel.getPetDefaultHealth(id);
             petStatus.hunger = petModel.getPetDefaultHunger(id);

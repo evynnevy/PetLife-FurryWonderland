@@ -13,6 +13,14 @@ struct PetInfo {
     int defaultHunger;
     int defaultSleepiness;
     int defaultMood;
+
+    // v3.1:新增宠物性格系统
+    double hungryRate;      // 饥饿变化速率乘数
+    double sleepyRate;      // 困倦变化速率乘数
+    double feedEffect;      // 喂食效果乘数
+    double playEffect;      // 玩耍效果乘数
+    double restEffect;      // 休息效果乘数
+    double healEffect;      // 治疗效果乘数
 };
 
 class PetSelectionModel : public QObject
@@ -39,6 +47,14 @@ public:
     Q_INVOKABLE int getPetDefaultHunger(const QString &id) const;
     Q_INVOKABLE int getPetDefaultSleepiness(const QString &id) const;
     Q_INVOKABLE int getPetDefaultMood(const QString &id) const;
+
+    // v3.1新增：性格系数获取
+    Q_INVOKABLE double getHungryRate(const QString &id) const;
+    Q_INVOKABLE double getSleepyRate(const QString &id) const;
+    Q_INVOKABLE double getFeedEffect(const QString &id) const;
+    Q_INVOKABLE double getPlayEffect(const QString &id) const;
+    Q_INVOKABLE double getRestEffect(const QString &id) const;
+    Q_INVOKABLE double getHealEffect(const QString &id) const;
 
 signals:
     void petsChanged();

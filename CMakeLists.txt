@@ -17,6 +17,8 @@ qt_add_executable(PetLife
     MusicPlayer.cpp
     PetSelectionModel.h
     PetSelectionModel.cpp
+    SaveManager.h
+    SaveManager.cpp
 )
 
 target_link_libraries(PetLife PRIVATE Qt6::Core Qt6::Quick Qt6::Multimedia)

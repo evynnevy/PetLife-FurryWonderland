@@ -5,6 +5,7 @@
 #include <QString>
 #include <QDateTime>
 
+class SoundEffectPlayer;
 class PetStatus : public QObject
 {
     Q_OBJECT
@@ -41,12 +42,17 @@ public:
     Q_INVOKABLE QString checkStatus();            // 检查状态
     Q_INVOKABLE void reset();                     // 重置所有状态
 
-signals:
-    void healthChanged();
-    void hungerChanged();
-    void sleepinessChanged();
-    void moodChanged();
-    void statusWarning(QString message);  // 状态警告信号
+
+    // v3.2 新增：猫叫狗叫音效
+    Q_INVOKABLE void setSoundEffectPlayer(SoundEffectPlayer *player);
+    Q_INVOKABLE void setPetType(const QString &type);
+
+    signals:
+        void healthChanged();
+        void hungerChanged();
+        void sleepinessChanged();
+        void moodChanged();
+        void statusWarning(QString message);  // 状态警告信号
 
 private:
     void updateMoodBasedOnStatus();  // 根据其他状态更新心情
@@ -70,6 +76,10 @@ private:
     int m_fatigueCount;
     double getCurrentEffectFactor() const;
     void recordOperation();
+
+    // v3.2 新增：猫叫狗叫音效
+    SoundEffectPlayer *m_soundPlayer;
+    QString m_petType;
 };
 
 #endif // PETSTATUS_H

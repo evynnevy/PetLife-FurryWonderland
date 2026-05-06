@@ -12,5 +12,7 @@
         <file>images/Abyssinian.png</file>
         <file>audio/bgm.mp3</file>
         <file>images/Golden.png</file>
+        <file>audio/dog_woof.wav</file>
+        <file>audio/cat_meow.wav</file>
     </qresource>
 </RCC>

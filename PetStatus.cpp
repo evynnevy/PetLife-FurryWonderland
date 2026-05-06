@@ -8,19 +8,29 @@ PetStatus::PetStatus(QObject *parent)
     , m_hunger(30)      // 初始饥饿值
     , m_sleepiness(20)  // 初始困倦值
     , m_mood(80)        // 初始心情值
+
+    // v3.1 新增：宠物性格系统
+    , m_hungryRate(1.0)
+    , m_sleepyRate(1.0)
+    , m_feedEffect(1.0)
+    , m_playEffect(1.0)
+    , m_restEffect(1.0)
+    , m_healEffect(1.0)
+
+    // v3.1 新增：互动疲劳与冷却系统
+    , m_fatigueCount(0)
 {
-    // 每 3 秒自动变化一次（模拟时间流逝）
+    m_lastOperationTime = QDateTime::currentDateTime();
+
+    // 每 3 秒自动变化一次
     QTimer *timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, [this]() {
-        // 饥饿随时间增加
-        setHunger(qMin(100, m_hunger + 2));
-
-        // 困倦随时间增加
-        setSleepiness(qMin(100, m_sleepiness + 1));
-
+        int hungerDelta = static_cast<int>(2 * m_hungryRate);
+        int sleepinessDelta = static_cast<int>(1 * m_sleepyRate);
+        setHunger(qMin(100, m_hunger + hungerDelta));
+        setSleepiness(qMin(100, m_sleepiness + sleepinessDelta));
         // 心情会受其他状态影响
         updateMoodBasedOnStatus();
-
         // 健康会受极值影响
         updateHealthBasedOnStatus();
     });
@@ -81,130 +91,124 @@ void PetStatus::setMood(int mood) {
     }
 }
 
-// ===== 核心功能 =====
-
-// 喂食：减少饥饿，增加心情
-void PetStatus::feed(int amount) {
-    int oldHunger = m_hunger;
-    setHunger(m_hunger - amount);
-
-    // 计算实际减少的饥饿值
-    int actualReduced = oldHunger - m_hunger;
-
-    // 如果确实减少了饥饿，增加心情
-    if (actualReduced > 0) {
-        setMood(m_mood + 5);
+    // v3.1 新增：宠物性格系统
+    void PetStatus::setPersonality(double hungryRate, double sleepyRate,
+                                   double feedEffect, double playEffect,
+                                   double restEffect, double healEffect)
+    {
+        m_hungryRate = hungryRate;
+        m_sleepyRate = sleepyRate;
+        m_feedEffect = feedEffect;
+        m_playEffect = playEffect;
+        m_restEffect = restEffect;
+        m_healEffect = healEffect;
+        qDebug() << "性格系数已更新: hungryRate=" << m_hungryRate << " feedEffect=" << m_feedEffect;
     }
 
-    // 如果喂得太饱（饥饿值过低），略微增加困倦
-    if (m_hunger < 20) {
-        setSleepiness(m_sleepiness + 3);
+    // v3.1 新增：互动疲劳与冷却系统
+    double PetStatus::getCurrentEffectFactor() const{
+        // 如果不操作，返回满系数 1.0
+        if (m_fatigueCount == 0) return 1.0;
+
+        // 计算距离上一次操作的时间差
+        qint64 secondsSinceLast = m_lastOperationTime.secsTo(QDateTime::currentDateTime());
+        // 如果超过 5 秒，疲劳重置，系数恢复为 1.0
+        if (secondsSinceLast >= 5) return 1.0;
+
+        // 否则根据连续操作次数递减：连续第 2 次 0.9，第 3 次 0.8，最多递减到 0.5
+        double factor = 1.0 - (m_fatigueCount - 1) * 0.1;
+        return qBound(0.5, factor, 1.0);
     }
-}
 
-// 玩耍：增加心情，增加饥饿和困倦
-void PetStatus::play(int amount) {
-    setMood(m_mood + amount);
-    setHunger(m_hunger + 8);      // 玩耍会消耗体力，增加饥饿
-    setSleepiness(m_sleepiness + 5); // 玩耍会累，增加困倦
-}
-
-// 休息：减少困倦，增加健康
-void PetStatus::rest(int amount) {
-    int oldSleepiness = m_sleepiness;
-    setSleepiness(m_sleepiness - amount);
-
-    // 计算实际减少的困倦值
-    int actualReduced = oldSleepiness - m_sleepiness;
-
-    // 如果确实休息了，增加健康
-    if (actualReduced > 0) {
-        setHealth(m_health + 3);
+    void PetStatus::recordOperation(){
+        QDateTime now = QDateTime::currentDateTime();
+        if (m_fatigueCount == 0 || m_lastOperationTime.secsTo(now) >= 5) {
+            // 如果冷却已过，重置计数
+            m_fatigueCount = 1;
+        } else {
+            // 连续操作，增加计数
+            m_fatigueCount++;
+        }
+        m_lastOperationTime = now;
     }
-}
 
-// 治疗：增加健康
-void PetStatus::heal(int amount) {
-    setHealth(m_health + amount);
-}
+    void PetStatus::feed(int amount){
+        recordOperation();
+        double factor = getCurrentEffectFactor();
+        int actualAmount = static_cast<int>(amount * factor);
+        int oldHunger = m_hunger;
+        setHunger(m_hunger - actualAmount);
+        int actualReduced = oldHunger - m_hunger;
+        if (actualReduced > 0) {
+            setMood(m_mood + static_cast<int>(5 * factor));
+        }
+        if (m_hunger < 20) {
+            setSleepiness(m_sleepiness + static_cast<int>(3 * factor));
+        }
+    }
 
-// 检查状态：返回状态字符串
-QString PetStatus::checkStatus() {
-    if (m_health < 30) {
-        return "宠物生病了，需要治疗！";
-    } else if (m_hunger > 80) {
-        return "宠物很饿，需要喂食！";
-    } else if (m_sleepiness > 80) {
-        return "宠物很困，需要休息！";
-    } else if (m_mood < 30) {
-        return "宠物心情不好，需要玩耍！";
-    } else {
+    void PetStatus::play(int amount){
+        recordOperation();
+        double factor = getCurrentEffectFactor();
+        int actualAmount = static_cast<int>(amount * factor);
+        setMood(m_mood + actualAmount);
+        setHunger(m_hunger + static_cast<int>(8 * factor));
+        setSleepiness(m_sleepiness + static_cast<int>(5 * factor));
+    }
+
+    void PetStatus::rest(int amount){
+        recordOperation();
+        double factor = getCurrentEffectFactor();
+        int actualAmount = static_cast<int>(amount * factor);
+        int oldSleepiness = m_sleepiness;
+        setSleepiness(m_sleepiness - actualAmount);
+        int actualReduced = oldSleepiness - m_sleepiness;
+        if (actualReduced > 0) {
+            setHealth(m_health + static_cast<int>(3 * factor));
+        }
+    }
+
+    void PetStatus::heal(int amount){
+        recordOperation();
+        double factor = getCurrentEffectFactor();
+        int actualAmount = static_cast<int>(amount * factor);
+        setHealth(m_health + actualAmount);
+    }
+
+    QString PetStatus::checkStatus(){
+        if (m_health < 30) return "宠物生病了，需要治疗！";
+        if (m_hunger > 80) return "宠物很饿，需要喂食！";
+        if (m_sleepiness > 80) return "宠物很困，需要休息！";
+        if (m_mood < 30) return "宠物心情不好，需要玩耍！";
         return "宠物状态良好！";
     }
-}
 
-// 重置所有状态
-void PetStatus::reset() {
-    setHealth(100);
-    setHunger(30);
-    setSleepiness(20);
-    setMood(80);
-}
-
-// 私有函数：根据其他状态更新心情
-void PetStatus::updateMoodBasedOnStatus() {
-    int moodChange = 0;
-
-    // 饥饿影响心情
-    if (m_hunger > 70) {
-        moodChange -= 3;  // 很饿，心情变差
-    } else if (m_hunger < 30) {
-        moodChange += 1;  // 不饿，心情变好
+    void PetStatus::reset(){
+        setHealth(100);
+        setHunger(30);
+        setSleepiness(20);
+        setMood(80);
+        m_fatigueCount = 0;
+        m_lastOperationTime = QDateTime::currentDateTime();
     }
 
-    // 困倦影响心情
-    if (m_sleepiness > 70) {
-        moodChange -= 2;  // 很困，心情变差
-    } else if (m_sleepiness < 30) {
-        moodChange += 1;  // 不困，心情变好
+    void PetStatus::updateMoodBasedOnStatus(){
+        int moodChange = 0;
+        if (m_hunger > 70) moodChange -= 3;  //太饿导致心情变差
+        else if (m_hunger < 30) moodChange += 1;
+        if (m_sleepiness > 70) moodChange -= 2;  //太困导致心情变差
+        else if (m_sleepiness < 30) moodChange += 1;
+        if (m_health < 50) moodChange -= 2;  //健康状态差导致心情变差
+        else if (m_health > 80) moodChange += 1;
+        if (moodChange != 0) setMood(m_mood + moodChange);
     }
 
-    // 健康影响心情
-    if (m_health < 50) {
-        moodChange -= 2;  // 健康不佳，心情变差
-    } else if (m_health > 80) {
-        moodChange += 1;  // 健康良好，心情变好
+    void PetStatus::updateHealthBasedOnStatus(){
+        int healthChange = 0;
+        if (m_hunger > 90) healthChange -= 2;  //太饿导致健康状态下降
+        else if (m_hunger > 70) healthChange -= 1;
+        if (m_sleepiness > 90) healthChange -= 2;  //太太困导致健康状态下降
+        else if (m_sleepiness > 70) healthChange -= 1;  //太困导致健康状态下降
+        if (m_mood > 80 && m_health < 100) healthChange += 1;  //心情很好，可以恢复健康
+        if (healthChange != 0) setHealth(m_health + healthChange);
     }
-
-    if (moodChange != 0) {
-        setMood(m_mood + moodChange);
-    }
-}
-
-// 私有函数：根据状态更新健康
-void PetStatus::updateHealthBasedOnStatus() {
-    int healthChange = 0;
-
-    // 饥饿严重损害健康
-    if (m_hunger > 90) {
-        healthChange -= 2;  // 极度饥饿，健康下降
-    } else if (m_hunger > 70) {
-        healthChange -= 1;  // 饥饿，健康轻微下降
-    }
-
-    // 困倦严重损害健康
-    if (m_sleepiness > 90) {
-        healthChange -= 2;  // 极度困倦，健康下降
-    } else if (m_sleepiness > 70) {
-        healthChange -= 1;  // 困倦，健康轻微下降
-    }
-
-    // 心情很好可以略微恢复健康
-    if (m_mood > 80 && m_health < 100) {
-        healthChange += 1;  // 心情好，健康恢复
-    }
-
-    if (healthChange != 0) {
-        setHealth(m_health + healthChange);
-    }
-}

@@ -32,6 +32,15 @@ Item {
             petStatus.sleepiness = petModel.getPetDefaultSleepiness(id);
             petStatus.mood = petModel.getPetDefaultMood(id);
             console.log("切换后设置完成，健康:", petStatus.health);
+            // v3.1 新增：性格系数
+            petStatus.setPersonality(
+                petModel.getHungryRate(id),
+                petModel.getSleepyRate(id),
+                petModel.getFeedEffect(id),
+                petModel.getPlayEffect(id),
+                petModel.getRestEffect(id),
+                petModel.getHealEffect(id)
+            );
         }
     }
 
@@ -42,7 +51,6 @@ Item {
         fillMode: Image.PreserveAspectCrop
         opacity: 0.9
     }
-
     Rectangle {
         anchors.fill: parent
         color: "#20000000"

@@ -1,6 +1,16 @@
 #include "PetStatus.h"
 #include <QTimer>
 #include <QDebug>
+#include "SoundEffectPlayer.h"
+
+    //判断是猫是狗
+    static bool isCat(const QString &type){
+        return type == "ragdoll" || type == "abyssinian";
+    }
+
+    static bool isDog(const QString &type){
+        return type == "samoyed" || type == "golden";
+    }
 
 PetStatus::PetStatus(QObject *parent)
     : QObject(parent)
@@ -52,44 +62,53 @@ PetStatus::PetStatus(QObject *parent)
     warningTimer->start(10000);
 }
 
-// Getter
-int PetStatus::health() const { return m_health; }
-int PetStatus::hunger() const { return m_hunger; }
-int PetStatus::sleepiness() const { return m_sleepiness; }
-int PetStatus::mood() const { return m_mood; }
-
-// Setter
-void PetStatus::setHealth(int health) {
-    health = qBound(0, health, 100);
-    if (m_health != health) {
-        m_health = health;
-        emit healthChanged();
+    // v3.2 新增：猫叫狗叫音效
+    void PetStatus::setSoundEffectPlayer(SoundEffectPlayer *player){
+        m_soundPlayer = player;
     }
-}
 
-void PetStatus::setHunger(int hunger) {
-    hunger = qBound(0, hunger, 100);
-    if (m_hunger != hunger) {
-        m_hunger = hunger;
-        emit hungerChanged();
+    void PetStatus::setPetType(const QString &type){
+        m_petType = type;
     }
-}
 
-void PetStatus::setSleepiness(int sleepiness) {
-    sleepiness = qBound(0, sleepiness, 100);
-    if (m_sleepiness != sleepiness) {
-        m_sleepiness = sleepiness;
-        emit sleepinessChanged();
-    }
-}
+    // Getter
+    int PetStatus::health() const { return m_health; }
+    int PetStatus::hunger() const { return m_hunger; }
+    int PetStatus::sleepiness() const { return m_sleepiness; }
+    int PetStatus::mood() const { return m_mood; }
 
-void PetStatus::setMood(int mood) {
-    mood = qBound(0, mood, 100);
-    if (m_mood != mood) {
-        m_mood = mood;
-        emit moodChanged();
+    // Setter
+    void PetStatus::setHealth(int health) {
+        health = qBound(0, health, 100);
+        if (m_health != health) {
+            m_health = health;
+            emit healthChanged();
+        }
     }
-}
+
+    void PetStatus::setHunger(int hunger) {
+        hunger = qBound(0, hunger, 100);
+        if (m_hunger != hunger) {
+            m_hunger = hunger;
+            emit hungerChanged();
+        }
+    }
+
+    void PetStatus::setSleepiness(int sleepiness) {
+        sleepiness = qBound(0, sleepiness, 100);
+        if (m_sleepiness != sleepiness) {
+            m_sleepiness = sleepiness;
+            emit sleepinessChanged();
+        }
+    }
+
+    void PetStatus::setMood(int mood) {
+        mood = qBound(0, mood, 100);
+        if (m_mood != mood) {
+            m_mood = mood;
+            emit moodChanged();
+        }
+    }
 
     // v3.1 新增：宠物性格系统
     void PetStatus::setPersonality(double hungryRate, double sleepyRate,
@@ -133,6 +152,14 @@ void PetStatus::setMood(int mood) {
     }
 
     void PetStatus::feed(int amount){
+        // v3.2 新增：猫叫狗叫音效
+        if (m_soundPlayer) {
+            if (isCat(m_petType))
+                m_soundPlayer->playMeow();
+            else if (isDog(m_petType))
+                m_soundPlayer->playWoof();
+        }
+
         recordOperation();
         double factor = getCurrentEffectFactor();
         int actualAmount = static_cast<int>(amount * factor);
@@ -148,6 +175,14 @@ void PetStatus::setMood(int mood) {
     }
 
     void PetStatus::play(int amount){
+        // v3.2 新增：猫叫狗叫音效
+        if (m_soundPlayer) {
+            if (isCat(m_petType))
+                m_soundPlayer->playMeow();
+            else if (isDog(m_petType))
+                m_soundPlayer->playWoof();
+        }
+
         recordOperation();
         double factor = getCurrentEffectFactor();
         int actualAmount = static_cast<int>(amount * factor);
@@ -157,6 +192,14 @@ void PetStatus::setMood(int mood) {
     }
 
     void PetStatus::rest(int amount){
+        // v3.2 新增：猫叫狗叫音效
+        if (m_soundPlayer) {
+            if (isCat(m_petType))
+                m_soundPlayer->playMeow();
+            else if (isDog(m_petType))
+                m_soundPlayer->playWoof();
+        }
+
         recordOperation();
         double factor = getCurrentEffectFactor();
         int actualAmount = static_cast<int>(amount * factor);
@@ -169,6 +212,14 @@ void PetStatus::setMood(int mood) {
     }
 
     void PetStatus::heal(int amount){
+        // v3.2 新增：猫叫狗叫音效
+        if (m_soundPlayer) {
+            if (isCat(m_petType))
+                m_soundPlayer->playMeow();
+            else if (isDog(m_petType))
+                m_soundPlayer->playWoof();
+        }
+
         recordOperation();
         double factor = getCurrentEffectFactor();
         int actualAmount = static_cast<int>(amount * factor);

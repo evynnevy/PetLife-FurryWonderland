@@ -1,15 +1,38 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
-import com.petlife 1.0
 
 Item {
     id: roomPage
 
     property bool statusExpanded: true
 
-    PetStatus {
-        id: petStatus
+    Component.onCompleted: {
+        var id = petModel.currentPetId;
+        console.log("=== RoomPage 初始化，当前宠物ID:", id, "名称:", petModel.currentPetName);
+        var health = petModel.getPetDefaultHealth(id);
+        var hunger = petModel.getPetDefaultHunger(id);
+        var sleepiness = petModel.getPetDefaultSleepiness(id);
+        var mood = petModel.getPetDefaultMood(id);
+        console.log("默认值: 健康", health, "饥饿", hunger, "困倦", sleepiness, "心情", mood);
+        petStatus.health = health;
+        petStatus.hunger = hunger;
+        petStatus.sleepiness = sleepiness;
+        petStatus.mood = mood;
+        console.log("设置后 petStatus 值: 健康", petStatus.health, "饥饿", petStatus.hunger, "困倦", petStatus.sleepiness, "心情", petStatus.mood);
+    }
+
+    Connections {
+        target: petModel
+        onCurrentPetChanged: {
+            var id = petModel.currentPetId;
+            console.log("宠物切换为:", id);
+            petStatus.health = petModel.getPetDefaultHealth(id);
+            petStatus.hunger = petModel.getPetDefaultHunger(id);
+            petStatus.sleepiness = petModel.getPetDefaultSleepiness(id);
+            petStatus.mood = petModel.getPetDefaultMood(id);
+            console.log("切换后设置完成，健康:", petStatus.health);
+        }
     }
 
     // 背景图片
@@ -139,4 +162,37 @@ Item {
         anchors.bottom: parent.bottom; anchors.bottomMargin: 12; anchors.horizontalCenter: parent.horizontalCenter
         text: "点击卡片头部可收起状态栏"; font.pixelSize: 12; color: "#FFFFFFCC"; z: 5
     }
+
+    //存档读档按钮
+    Column {
+            id: saveLoadButtons
+            spacing: 20
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.right: parent.right
+            anchors.rightMargin: 20
+            z: 10
+
+            Button {
+                text: "💾\n存档"
+                font.pixelSize: 20
+                width: 80; height: 80
+                background: Rectangle {
+                    radius: 40
+                    color: parent.pressed ? "#DDDDDD" : "#F5F5F5"
+                    border.color: "#CCCCCC"; border.width: 1
+                }
+                onClicked: saveManager.saveGame()
+            }
+            Button {
+                text: "📂\n读档"
+                font.pixelSize: 20
+                width: 80; height: 80
+                background: Rectangle {
+                    radius: 40
+                    color: parent.pressed ? "#DDDDDD" : "#F5F5F5"
+                    border.color: "#CCCCCC"; border.width: 1
+                }
+                onClicked: saveManager.loadGame()
+            }
+        }
 }

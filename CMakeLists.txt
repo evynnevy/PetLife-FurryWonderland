@@ -5,7 +5,6 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Core Quick)
 find_package(Qt6 REQUIRED COMPONENTS Core Quick Multimedia)
 
 qt_add_executable(PetLife
@@ -19,6 +18,8 @@ qt_add_executable(PetLife
     PetSelectionModel.cpp
     SaveManager.h
     SaveManager.cpp
+    SoundEffectPlayer.h
+    SoundEffectPlayer.cpp
 )
 
 target_link_libraries(PetLife PRIVATE Qt6::Core Qt6::Quick Qt6::Multimedia)
